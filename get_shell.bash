@@ -1,0 +1,1 @@
+docker exec -it ttt-lisp bash
