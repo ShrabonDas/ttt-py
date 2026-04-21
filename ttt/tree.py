@@ -24,6 +24,7 @@ class Tree:
     
     
 def _dfs(root: Tree):
+    """Yield all nodes in DFS left-to-right order using an explicit stack."""
     stack = [root]
     
     while stack:
@@ -36,6 +37,10 @@ def _dfs(root: Tree):
     
 def build_tree(expression: TreeExpr, *, root: bool = True,
                index_subtrees: bool = True) -> Tree:
+    """Convert a TreeExpr into a Tree node with parent links and height.
+    
+    When root=True, also assign dfs_order to every node and builds the 
+    subtree index (symbol, depth) -> [Tree, ...] for fast pattern matching."""
     from .keys import extract_keys_with_ops, add_to_index
     
     node = Tree()
@@ -64,6 +69,9 @@ def build_tree(expression: TreeExpr, *, root: bool = True,
     
     
 def update_tree_index(root: Tree) -> None:
+    """Rebuild the subtree index and dfs_order for all nodes under root.
+    
+    Call this after any in-place modifications of the tree structure."""
     from .keys import add_to_index
     subtrees: dict = {}
     
