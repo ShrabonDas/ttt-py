@@ -38,17 +38,16 @@ class Tree:
     def is_leaf(self) -> bool:
         return self._is_atom
     
-    
-def _dfs(root: Tree):
-    """Yield all nodes in DFS left-to-right order using an explicit stack."""
-    stack = [root]
-    
-    while stack:
-        node = stack.pop()
-        yield node
-        if not node.is_leaf:
-            for child in reversed(node.children):
-                stack.append(child)
+    def _dfs(self):
+        """Yield all nodes in DFS left-to-right order using an explicit stack."""
+        stack = [self]
+        
+        while stack:
+            node = stack.pop()
+            yield node
+            if not node.is_leaf:
+                for child in reversed(node.children):
+                    stack.append(child)
     
     
 def update_tree_index(root: Tree) -> None:
@@ -58,7 +57,7 @@ def update_tree_index(root: Tree) -> None:
     from .keys import add_to_index
     subtrees: dict = {}
     
-    for dfs, node in enumerate(_dfs(root), start=1):
+    for dfs, node in enumerate(root._dfs(), start=1):
         node.dfs_order = dfs
         for key in node.keys:
             add_to_index(key, node, subtrees)
