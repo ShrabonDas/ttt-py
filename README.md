@@ -1,42 +1,97 @@
 # ttt_py
 
-A Python port of [TTT (Tree-to-Tree Transduction Language)](https://github.com/genelkim/ttt), originally written in Common Lisp by Adam Purtee and maintained by Gene Louis Kim. TTT fills the same role for s-expression trees as regex does for strings.
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-> **Status**: In Development
+TTT is a pattern matching and rewriting language for s-expression trees, analogous to regex for strings. This is the Python port, originally written in Common Lisp by Adam Purtee / Gene Louis Kim. See the paper [TTT: A tree transduction language for syntactic and semantic processing](http://aclweb.org/anthology/W12-0803).
 
-## What this repo contains
+Trees are Python tuples. Leaves are strings, integers, or floats.
 
-- `ttt-py/` - the Python port (in progress)
-- `repos/ttt/` - the original Lisp source as a git submodule, used as the ground-truth reference for testing
+## Branches
 
-## Setup
+- **`reference`** — complete, working Python implementation. Use this if you need a fully functional TTT now.
+- **`main`** — clean rebuild in progress, one small commit at a time, with tests and documentation.
 
-**Clone with submodule** (required to get the Lisp reference source):
-
-```bash
-git clone --recurse-submodules https://github.com/ShrabonDas/ttt-py
-```
-
-Or if already cloned:
+## Installation
 
 ```bash
-git submodule update --init
+pip install -e .
 ```
 
-## Running the Lisp reference (for ground-truth testing)
+## Quick start
 
-The Docker setup lets you run the original Lisp TTT to validate Python output against it.
+```python
+from ttt import match_expr, apply_rule, apply_rules, store_pred, mk_pred_ttt
+
+# Match a pattern against a tree
+match_expr('_*', ('A', 'B', 'C'))         # True
+match_expr(('NP', '_+'), ('NP', 'dog'))   # True
+match_expr(('NP', '_+'), ('VP', 'run'))   # False
+
+# Capture with variables
+match_expr(('NP', '_+1'), ('NP', 'dog', 'cat'))
+# => {'_+1': [['dog', 'cat']]}
+
+# Apply a rewrite rule  (pattern / template)
+apply_rule(('/', ('NP', '_+1'), ('NP-moved', '_+1')), ('NP', 'the', 'dog'))
+# => ('NP-moved', 'the', 'dog')
+
+# Apply a list of rules until convergence
+rules = [
+    ('/', ('_*', ('NP', '_+', ('PP', '_+1')), '_*1'),
+          ('_*', ('NP', '_+'), ('PP', '_+1'), '_*1')),
+]
+apply_rules(rules, ('S', ('NP', 'the', 'dog', ('PP', 'in', 'the', 'park'))))
+```
+
+## Pattern operators
+
+| Operator | Meaning |
+|----------|---------|
+| `_*` | zero or more nodes |
+| `_+` | one or more nodes |
+| `_?` | zero or one node |
+| `_*n` / `_+n` / `_?n` | same, bound to variable `n` |
+| `_!` | any single node (not a sequence) |
+| `(! a b c)` | matches `a`, `b`, or `c` |
+| `(~ a b c)` | matches anything except `a`, `b`, `c` |
+| `(@  ...)` | matches any permutation of the children |
+| `(_** pat)` | matches `pat` anywhere in the subtree (descendant) |
+
+## Predicates
+
+```python
+# Register a Python function as a predicate
+def noun_phrase?(tree):
+    return isinstance(tree, tuple) and tree[0] == 'NP'
+
+store_pred('noun_phrase?', noun_phrase?)
+match_expr('noun_phrase?', ('NP', 'dog'))  # True
+
+# Or define a predicate backed by a TTT pattern
+mk_pred_ttt('short-np?', ('NP', '_!'))
+match_expr('short-np?', ('NP', 'dog'))   # True
+match_expr('short-np?', ('NP', 'the', 'dog'))  # False
+```
+
+## apply_rule / apply_rules options
+
+```python
+apply_rule(rule, tree, shallow=False, max_n=None, trace=False)
+apply_rules(rules, tree, shallow=False, max_n=None, trace=False,
+            rule_order='slow-forward')
+```
+
+`rule_order` options:
+- `'slow-forward'` — apply each rule until exhausted, possibly repeating the sequence
+- `'earliest-first'` — always apply the first applicable rule, repeat until none apply
+- `'fast-forward'` — apply each rule at most once, repeat list until convergence
+
+## Running tests
 
 ```bash
-docker build -t sbcl-quicklisp:1.0 .
-docker compose up -d
-bash get_shell.bash
+pytest
 ```
 
-Inside the container:
+## Original Lisp library
 
-```lisp
-(ql:quickload :ttt)
-(in-package :ttt)
-(match-expr '(a b c) '(a b c))
-```
+The original Common Lisp implementation is maintained at [github.com/genelkim/ttt](https://github.com/genelkim/ttt).
