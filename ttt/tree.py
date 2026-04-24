@@ -6,7 +6,8 @@ class Tree:
     __slots__ = ('expr', 'children', 'height', 'keys',
                  'parent', 'parent_idx', 'to_subtrees', 'dfs_order', '_is_atom')
     
-    def __init__(self, expression: TreeExpr, *, root: bool = True):
+    def __init__(self, expression: TreeExpr, *, root: bool = True, 
+                 index_subtrees: bool = True):
         from .keys import extract_keys_with_ops
         
         self.expr: TreeExpr = expression
@@ -32,7 +33,7 @@ class Tree:
             self.height = 1 + max(c.height for c in children) if children else 1
             
         if root:
-            update_tree_index(self)
+            update_tree_index(self, index_subtrees=index_subtrees)
         
     @property
     def is_leaf(self) -> bool:
@@ -50,16 +51,17 @@ class Tree:
                     stack.append(child)
     
     
-def update_tree_index(root: Tree) -> None:
+def update_tree_index(root: Tree, index_subtrees: bool = True) -> None:
     """Rebuild the subtree index and dfs_order for all nodes under root.
     
     Call this after any in-place modifications of the tree structure."""
     from .keys import add_to_index
-    subtrees: dict = {}
+    subtrees: dict = {} if index_subtrees else None
     
     for dfs, node in enumerate(root._dfs(), start=1):
         node.dfs_order = dfs
-        for key in node.keys:
-            add_to_index(key, node, subtrees)
+        if index_subtrees:
+            for key in node.keys:
+                add_to_index(key, node, subtrees)
     
     root.to_subtrees = subtrees
