@@ -89,6 +89,7 @@ apply_rules(rules, tree, shallow=False, max_n=None, trace=False,
 ## Running tests
 
 ```bash
+export PYTHONPATH=.
 pytest
 ```
 
