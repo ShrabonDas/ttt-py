@@ -6,8 +6,7 @@ from .cache import build_pattern
 from .bindings import get_binding
 from .match_engine import deep_match, deepest_matches
 from .template import template_to_tree
-
-INF = float('inf')
+from .expressions import INF
 
 
 def _get_matches(pattern, tree: Tree, rule_depth: str) -> List:

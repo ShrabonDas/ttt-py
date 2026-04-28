@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import List, Optional
 from itertools import permutations
 from .base import Pattern
+from .general import _match_seq
 from ..bindings import Bindings, add_binding
 from ..operators import get_var, is_sticky
 from ..expressions import patt_min_width, patt_max_width
@@ -44,7 +45,7 @@ class FreeSeq(Pattern):
             if existing:
                 if [t.expr for t in existing[0]] != [t.expr for t in tree_seq]:
                     return None
-        result = _match_seq_ordered(self._sub_patts, tree_seq, bindings)
+        result = _match_seq(self._sub_patts, tree_seq, bindings)
         if result is not None:
             return add_binding(self.var, tree_seq, result)
         return None
@@ -82,26 +83,6 @@ class PermutedSeq(Pattern):
             return add_binding(self.var, tree_seq, result)
         return None
 
-
-def _match_seq_ordered(patts: list, tseq: list, bindings: Bindings) -> Optional[Bindings]:
-    """Match patterns left-to-right against tseq."""
-    stack = [(0, 0, bindings)]
-    while stack:
-        pi, ti, binds = stack.pop()
-        if pi == len(patts):
-            if ti == len(tseq):
-                return binds
-            continue
-        p = patts[pi]
-        lo = p.min_width
-        hi = p.max_width if p.max_width != INF else len(tseq) - ti
-        hi = min(hi, len(tseq) - ti)
-        for split in range(int(hi), int(lo) - 1, -1):
-            prefix = tseq[ti:ti + split]
-            b = p.match(prefix, binds)
-            if b is not None:
-                stack.append((pi + 1, ti + split, b))
-    return None
 
 
 def _match_permuted(patts: list, tseq: list, bindings: Bindings) -> Optional[Bindings]:

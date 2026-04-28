@@ -1,4 +1,3 @@
-import pytest
 from ttt.tree import Tree, build_tree, update_dfs_order, update_subtree_index
 
 

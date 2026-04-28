@@ -1,7 +1,6 @@
 """Tree node class and builder for TTT."""
 from __future__ import annotations
-from dataclasses import dataclass, field
-from typing import Optional, List, Any
+from typing import Optional, List
 from .types import TreeExpr
 
 

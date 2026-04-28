@@ -98,48 +98,37 @@ def _parse_var(suffix: str) -> Optional[str]:
 _parse_cache: dict = {}
 
 
+def _cached_parse(sym: str) -> tuple:
+    cached = _parse_cache.get(sym)
+    if cached is None:
+        cached = parse_sym(sym)
+        _parse_cache[sym] = cached
+    return cached
+
+
 def get_op(sym) -> str:
     """Return the operator string for a symbol, or 'literal'."""
-    if isinstance(sym, (int, float)):
-        return 'literal'
     if not isinstance(sym, str):
         return 'literal'
-    cached = _parse_cache.get(sym)
-    if cached is not None:
-        return cached[0]
-    result = parse_sym(sym)
-    _parse_cache[sym] = result
-    return result[0]
+    return _cached_parse(sym)[0]
 
 
 def get_var(sym) -> Optional[str]:
     if not isinstance(sym, str):
         return None
-    cached = _parse_cache.get(sym)
-    if cached is None:
-        cached = parse_sym(sym)
-        _parse_cache[sym] = cached
-    return cached[1]
+    return _cached_parse(sym)[1]
 
 
 def get_n(sym) -> Optional[int]:
     if not isinstance(sym, str):
         return None
-    cached = _parse_cache.get(sym)
-    if cached is None:
-        cached = parse_sym(sym)
-        _parse_cache[sym] = cached
-    return cached[2]
+    return _cached_parse(sym)[2]
 
 
 def get_m(sym) -> Optional[int]:
     if not isinstance(sym, str):
         return None
-    cached = _parse_cache.get(sym)
-    if cached is None:
-        cached = parse_sym(sym)
-        _parse_cache[sym] = cached
-    return cached[3]
+    return _cached_parse(sym)[3]
 
 
 def op_requires_args(op: str) -> bool:
@@ -154,11 +143,7 @@ def is_sticky(sym: str) -> bool:
     if op == 'literal':
         return False
     # Has a dot in suffix
-    cached = _parse_cache.get(sym)
-    if cached is None:
-        cached = parse_sym(sym)
-        _parse_cache[sym] = cached
-    var = cached[1]
+    var = _cached_parse(sym)[1]
     return var is not None and '.' in var
 
 

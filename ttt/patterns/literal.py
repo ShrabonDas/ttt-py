@@ -25,12 +25,8 @@ class LiteralPatt(Pattern):
         t = tree_seq[0]
         if t.height != self.min_height:
             return None
-        if isinstance(self.expr, str):
-            if t.expr == self.expr:
-                return bindings
-        else:
-            if t.expr == self.expr:
-                return bindings
+        if t.expr == self.expr:
+            return bindings
         return None
 
 

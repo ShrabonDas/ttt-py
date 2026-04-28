@@ -1,5 +1,4 @@
 """Pattern matching tests ported from repos/ttt/src/tests.lisp."""
-import pytest
 from ttt import match_expr
 
 
