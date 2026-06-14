@@ -1,0 +1,13 @@
+[project]
+name = "ttt-py"
+version = "0.1.0"
+description = "TTT: Tree-to-Tree Transduction — Python port"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.hatch.build.targets.wheel]
+packages = ["ttt"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
